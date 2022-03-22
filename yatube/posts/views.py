@@ -77,16 +77,20 @@ def post_create(request):
 def post_edit(request, post_id):
     template = 'posts/create_post.html'
     post = get_object_or_404(Post, id=post_id)
+    form = PostForm(
+        request.POST or None,
+        instance=post,
+    )
     if post.author != request.user:
         return redirect('posts:post_detail', post_id=post_id)
     if request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
         if form.is_valid():
             form.save()
             return redirect('posts:post_detail', post_id=post_id)
-
         return render(request, template, {'form': form})
 
-    post = Post.objects.get(id=post_id)
-    form = PostForm(instance=post)
-    return render(request, template, {'form': form, 'is_edit': True})
+    context = {
+        'form': form,
+        'is_edit': True
+    }
+    return render(request, template, context)
